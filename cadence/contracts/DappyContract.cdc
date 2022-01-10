@@ -2,8 +2,8 @@
 import FungibleToken from "./FungibleToken.cdc"
 
 pub contract DappyContract {
-  access(self) var templates: {UInt32: Template}
-  access(self) var families: @{UInt32: Family}
+  pub var templates: {UInt32: Template}
+  pub var families: @{UInt32: Family}
   
   pub var nextTemplateID: UInt32
   pub var nextFamilyID: UInt32
@@ -26,7 +26,7 @@ pub contract DappyContract {
       self.price = self._calculatePrice(dna: dna.length)
     }
 
-    access(self) fun _calculatePrice(dna: Int): UFix64 {
+    pub fun _calculatePrice(dna: Int): UFix64 {
       if dna >= 31 {
         return 21.0
       } else if dna >= 25 {
