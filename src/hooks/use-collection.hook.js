@@ -1,14 +1,60 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+// import * as fcl from "@onflow/fcl"
+import { query, mutate, tx } from "@onflow/fcl"
+import { CHECK_COLLECTION } from '../flow/check-collection-script'
+import { CREATE_COLLECTION } from '../flow/create-collection-tx'
+import { DELETE_COLLECTION } from '../flow/delete-collection-tx'
 
-export default function useCollection() {
-  const [loading] = useState(true)
+export default function useCollection(user) {
+  const [loading, setLoading] = useState(true)
   const [collection, setCollection] = useState(false)
 
+  useEffect(() => {
+    if (!user?.addr) console.log("no user address: " + user)
+    const checkCollection = async () => {
+      try {
+        let res = await query({
+          cadence: CHECK_COLLECTION,
+          args: (arg, t) => [arg(user?.addr, t.Address)],
+        });
+        console.log(JSON.stringify(res))
+        setCollection(res);
+        setLoading(false);
+      } catch (err) {
+          setLoading(false);
+        }
+    }
+    checkCollection()
+  },[])
+
   const createCollection = async () => {
-    setCollection(true)
+    try {
+      let res = await mutate({
+        cadence: CREATE_COLLECTION,
+        limit: 55,
+      });
+      await tx(res).onceSealed();
+      setCollection(true);
+    } catch(err) {
+        console.log(err);
+        setLoading(false);
+      }
   }
 
   const deleteCollection = async () => {
+    try {
+      let res = await mutate({
+        cadence: DELETE_COLLECTION,
+        limit: 75
+      });
+      await tx(res).onceSealed();
+      setCollection(false);
+    }
+
+    catch (err) {
+      console.log(err);
+      setLoading(false);
+    }
     setCollection(false)
     window.location.reload()
   }
